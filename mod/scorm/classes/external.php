@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->dirroot . '/mod/scorm/lib.php');
 require_once($CFG->dirroot . '/mod/scorm/locallib.php');
+require_once($CFG->dirroot . '/course/modlib.php');
 
 /**
  * SCORM module external functions
@@ -917,7 +918,7 @@ class mod_scorm_external extends external_api {
     /**
      * Describes the parameters for get_scorm_access_information.
      *
-     * @return external_external_function_parameters
+     * @return external_function_parameters
      * @since Moodle 3.7
      */
     public static function get_scorm_access_information_parameters() {
@@ -980,6 +981,79 @@ class mod_scorm_external extends external_api {
             $structure[$field] = new external_value(PARAM_BOOL, 'Whether the user has the capability ' . $capname . ' allowed.',
                 VALUE_OPTIONAL);
         }
+
+        return new external_single_structure($structure);
+    }
+
+    public static function create_activity_parameters() {
+
+        return new external_function_parameters([
+            'course' => new external_value(PARAM_INT, 'course id'),
+            'section' => new external_value(PARAM_INT, 'section id'),
+            'packagefile' => new external_value(PARAM_INT, 'package file id'),
+            'name' => new external_value(PARAM_TEXT, 'activity name')
+        ]);
+    }
+
+    public static function create_activity($course, $section, $packagefile, $name) {
+        global $DB, $CFG, $USER;
+
+        $USER->ignoresesskey = true;
+
+        self::validate_parameters(self::create_activity_parameters(), [
+            'course' => $course,
+            'section' => $section,
+            'packagefile' => $packagefile,
+            'name' => $name
+        ]);
+
+        $course = $DB->get_record('course', array('id'=>$course), '*', MUST_EXIST);
+
+        list($module, $context, $cw, $cm, $data) = prepare_new_moduleinfo_data($course, "scorm", $section);
+
+        $data->name = $name;
+        $data->section = $section;
+        $data->visible = "1";
+        $data->course = $course;
+        $data->module = "19";
+        $data->modulename = "scorm";
+        $data->groupmode = "0";
+        $data->groupingid = "0";
+        $data->id = "";
+        $data->instance = "";
+        $data->coursemodule = "";
+        $data->completion = 1;
+        $data->completionview = 1;
+        $data->introeditor = ['text' => "", 'format' => "1", 'itemid' => $packagefile];
+        $data->return = 0;
+        $data->sr = 0;
+        $data->add = "scorm";
+
+        $modmoodleform = "$CFG->dirroot/mod/scorm/mod_form.php";
+        require_once($modmoodleform);
+
+        $mform = new mod_scorm_mod_form($data, $cw->section, $cm, $course);
+
+        $mform->get_form()->_flagSubmitted = true;
+        $mform->set_data($data);
+
+        $fromform = $mform->get_data_from_api();
+        $fromform = add_moduleinfo($fromform, $course, $mform);
+
+        $result =[
+            'warnings' => [],
+            'id' => $fromform->instance
+        ];
+
+        return $result;
+    }
+
+    public static function create_activity_returns() {
+
+        $structure = [
+            'warnings' => new external_warnings(),
+            'id' => new external_value(PARAM_INT, 'id')
+        ];
 
         return new external_single_structure($structure);
     }

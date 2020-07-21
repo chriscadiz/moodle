@@ -577,4 +577,46 @@ class mod_scorm_mod_form extends moodleform_mod {
             }
         }
     }
+
+    /**
+     * @return MoodleQuickForm
+     */
+    public function get_form() {
+
+        return $this->_form;
+    }
+
+    private function get_data_bypassing_validation() {
+
+        $mform =& $this->_form;
+
+        if (!$this->is_cancelled() and $this->is_submitted()) {
+            $data = $mform->exportValues();
+            unset($data['sesskey']); // we do not need to return sesskey
+            unset($data['_qf__'.$this->_formname]);   // we do not need the submission marker too
+            if (empty($data)) {
+                return NULL;
+            } else {
+                return (object)$data;
+            }
+        } else {
+            return NULL;
+        }
+    }
+
+    public function get_data_from_api() {
+
+        $data = $this->get_data_bypassing_validation();
+        if ($data) {
+            // Convert the grade pass value - we may be using a language which uses commas,
+            // rather than decimal points, in numbers. These need to be converted so that
+            // they can be added to the DB.
+            if (isset($data->gradepass)) {
+                $data->gradepass = unformat_float($data->gradepass);
+            }
+
+            $this->data_postprocessing($data);
+        }
+        return $data;
+    }
 }
