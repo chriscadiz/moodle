@@ -991,11 +991,12 @@ class mod_scorm_external extends external_api {
             'course' => new external_value(PARAM_INT, 'course id'),
             'section' => new external_value(PARAM_INT, 'section id'),
             'packagefile' => new external_value(PARAM_INT, 'package file id'),
-            'name' => new external_value(PARAM_TEXT, 'activity name')
+            'name' => new external_value(PARAM_TEXT, 'activity name'),
+            'type' => new external_value(PARAM_INT, '3 if quiz, 5 if topic')
         ]);
     }
 
-    public static function create_activity($course, $section, $packagefile, $name) {
+    public static function create_activity($course, $section, $packagefile, $name, $type) {
         global $DB, $CFG, $USER;
 
         $USER->ignoresesskey = true;
@@ -1004,7 +1005,8 @@ class mod_scorm_external extends external_api {
             'course' => $course,
             'section' => $section,
             'packagefile' => $packagefile,
-            'name' => $name
+            'name' => $name,
+            'type' => $type
         ]);
 
         $course = $DB->get_record('course', array('id'=>$course), '*', MUST_EXIST);
@@ -1038,6 +1040,30 @@ class mod_scorm_external extends external_api {
         $mform->set_data($data);
 
         $fromform = $mform->get_data_from_api();
+
+        $fromform->displayactivityname = "1";
+        $fromform->skipview = "0";
+        $fromform->hidebrowse = "0";
+        $fromform->displaycoursestructure = "0";
+        $fromform->hidetoc = "1";
+        $fromform->nav = "1";
+        $fromform->grademethod = ($type == 3) ? "1" : "0";
+        $fromform->maxgrade = "100";
+        $fromform->maxattempt = "0";
+        $fromform->whatgrade = "0";
+        $fromform->forcecompleted = "0";
+        $fromform->auto = "0";
+        $fromform->autocommit = "0";
+        $fromform->masteryoverride = "1";
+        $fromform->completionunlocked = 1;
+        $fromform->completion = "2";
+        $fromform->completionview = "1";
+        $fromform->completionscorerequired = null;
+        $fromform->completionscoredisabled = "1";
+        $fromform->completionstatusrequired = 4;
+        $fromform->completionstatusallscos = 1;
+        $fromform->completionexpected = 0;
+
         $fromform = add_moduleinfo($fromform, $course, $mform);
 
         $result =[
