@@ -1,7 +1,7 @@
 This files describes API changes in core libraries and APIs,
 information provided here is intended especially for developers.
 
-=== 4.0 ===
+=== 3.10 ===
 * Added function setScrollable in core/modal. This function can be used to set the modal's body to be scrollable or not
   when the modal's height exceeds the browser's height. This is also supported in core/modal_factory through the
   'scrollable' config parameter which can be set to either true or false. If not explicitly defined, the default value
@@ -31,6 +31,17 @@ information provided here is intended especially for developers.
 * The form element 'htmleditor', which was deprecated in 3.6, has been removed.
 * The `core_output_load_fontawesome_icon_map` web service has been deprecated and replaced by
   `core_output_load_fontawesome_icon_system_map` which takes the name of the theme to generate the icon system map for.
+* A new parameter `$rolenamedisplay` has been added to `get_viewable_roles()` and `get_switchable_roles` to define how role names
+  should be returned.
+* The class coursecat_sortable_records has been removed.
+* Admin setting admin_setting_configselect now supports lazy-loading the options list by supplying
+  a callback function instead of an array of options.
+* Admin setting admin_setting_configselect now supports validating the selection by supplying a
+  callback function.
+* The task system has new functions adhoc_task_starting() and scheduled_task_starting() which must
+  be called before executing a task, and a new function \core\task\manager::get_running_tasks()
+  returns information about currently-running tasks.
+* New library function rename_to_unused_name() to rename a file within its current location.
 
 === 3.9 ===
 * Following function has been deprecated, please use \core\task\manager::run_from_cli().

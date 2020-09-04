@@ -855,6 +855,13 @@ class core_course_external extends external_api {
             }
             require_capability('moodle/course:create', $context);
 
+            // Fullname and short name are required to be non-empty.
+            if (trim($course['fullname']) === '') {
+                throw new moodle_exception('errorinvalidparam', 'webservice', '', 'fullname');
+            } else if (trim($course['shortname']) === '') {
+                throw new moodle_exception('errorinvalidparam', 'webservice', '', 'shortname');
+            }
+
             // Make sure lang is valid
             if (array_key_exists('lang', $course)) {
                 if (empty($availablelangs[$course['lang']])) {
@@ -1040,14 +1047,20 @@ class core_course_external extends external_api {
                     $course['category'] = $course['categoryid'];
                 }
 
-                // Check if the user can change fullname.
+                // Check if the user can change fullname, and the new value is non-empty.
                 if (array_key_exists('fullname', $course) && ($oldcourse->fullname != $course['fullname'])) {
                     require_capability('moodle/course:changefullname', $context);
+                    if (trim($course['fullname']) === '') {
+                        throw new moodle_exception('errorinvalidparam', 'webservice', '', 'fullname');
+                    }
                 }
 
-                // Check if the user can change shortname.
+                // Check if the user can change shortname, and the new value is non-empty.
                 if (array_key_exists('shortname', $course) && ($oldcourse->shortname != $course['shortname'])) {
                     require_capability('moodle/course:changeshortname', $context);
+                    if (trim($course['shortname']) === '') {
+                        throw new moodle_exception('errorinvalidparam', 'webservice', '', 'shortname');
+                    }
                 }
 
                 // Check if the user can change the idnumber.
@@ -4368,15 +4381,10 @@ class core_course_external extends external_api {
         $coursecontext = context_course::instance($courseid);
         self::validate_context($coursecontext);
 
-        $pluginswithfunction = get_plugins_with_function('custom_chooser_footer', 'lib.php');
-        if ($pluginswithfunction) {
-            foreach ($pluginswithfunction as $plugintype => $plugins) {
-                foreach ($plugins as $pluginfunction) {
-                    $footerdata = $pluginfunction($courseid, $sectionid);
-                    break; // Only a single plugin can modify the footer.
-                }
-                break; // Only a single plugin can modify the footer.
-            }
+        $activeplugin = get_config('core', 'activitychooseractivefooter');
+
+        if ($activeplugin !== COURSE_CHOOSER_FOOTER_NONE) {
+            $footerdata = component_callback($activeplugin, 'custom_chooser_footer', [$courseid, $sectionid]);
             return [
                 'footer' => true,
                 'customfooterjs' => $footerdata->get_footer_js_file(),
