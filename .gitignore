@@ -30,6 +30,7 @@
 CVS
 .DS_Store
 /.settings/
+/.idea
 /.project
 /.buildpath
 /.cache
