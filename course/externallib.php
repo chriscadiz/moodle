@@ -4406,4 +4406,51 @@ class core_course_external extends external_api {
             ]
         );
     }
+
+    /**
+     * Parameters for function delete_section()
+     *
+     * @return external_function_parameters
+     */
+    public static function delete_section_parameters() {
+        return new external_function_parameters([
+            'id' => new external_value(PARAM_INT, 'course section id', VALUE_REQUIRED),
+        ]);
+    }
+
+    /**
+     * Performs one of the edit section actions
+     *
+     * @param int $id section id
+     * @return string
+     */
+    public static function delete_section($id) {
+        global $DB;
+        // Validate and normalize parameters.
+        $params = self::validate_parameters(self::delete_section_parameters(), ['id' => $id]);
+        $id = $params['id'];
+
+        $section = $DB->get_record('course_sections', array('id' => $id), '*', MUST_EXIST);
+        $course = $DB->get_record('course', array('id' => $section->course), '*', MUST_EXIST);
+        $sectionnum = $section->section;
+
+        $coursecontext = context_course::instance($section->course);
+        self::validate_context($coursecontext);
+
+        // Get section_info object with all availability options.
+        $sectioninfo = get_fast_modinfo($course)->get_section_info($sectionnum);
+
+        return course_delete_section($course, $sectioninfo, true, true);
+    }
+
+    /**
+     * Return structure for edit_section()
+     *
+     * @since Moodle 3.3
+     * @return external_description
+     */
+    public static function delete_section_returns() {
+        return new external_value(PARAM_BOOL, 'Whether delete operation was successful');
+    }
+
 }
