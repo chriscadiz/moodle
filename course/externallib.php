@@ -4509,6 +4509,7 @@ class core_course_external extends external_api {
             $section = course_create_section($course, 0);
             $x =  new stdClass();
             $x->id = $section->id;
+            $x->section = $section->section;
             $sections []= $x;
 
         }
@@ -4527,6 +4528,7 @@ class core_course_external extends external_api {
             new external_single_structure(
                 array(
                     'id' => new external_value(PARAM_INT, 'id'),
+                    'section' => new external_value(PARAM_INT, 'section'),
                 )
             )
         );
