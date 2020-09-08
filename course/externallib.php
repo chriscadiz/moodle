@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die;
 use core_course\external\course_summary_exporter;
 
 require_once("$CFG->libdir/externallib.php");
+require_once($CFG->dirroot.'/course/lib.php');
 require_once("lib.php");
 
 /**
@@ -4160,6 +4161,8 @@ class core_course_external extends external_api {
      * @param string $componentname the name of the component from which this content item originates.
      * @param int $contentitemid the id of the content item.
      * @return stdClass the exporter content item.
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
      */
     public static function add_content_item_to_user_favourites(string $componentname, int $contentitemid) {
         global $USER;
@@ -4209,6 +4212,8 @@ class core_course_external extends external_api {
      * @param string $componentname the name of the component from which this content item originates.
      * @param int $contentitemid the id of the content item.
      * @return stdClass the exported content item.
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
      */
     public static function remove_content_item_from_user_favourites(string $componentname, int $contentitemid) {
         global $USER;
@@ -4268,6 +4273,10 @@ class core_course_external extends external_api {
      *
      * @param int $courseid The course we want to fetch the modules for
      * @return array Contains array of modules and their metadata
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws moodle_exception
+     * @throws restricted_context_exception
      */
     public static function get_course_content_items(int $courseid) {
         global $USER;
@@ -4306,6 +4315,10 @@ class core_course_external extends external_api {
      * @param  string $area identifier for this activity.
      * @param  int $id Associated id. This is needed in conjunction with the area to find the recommendation.
      * @return array some warnings or something.
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws required_capability_exception
+     * @throws restricted_context_exception
      */
     public static function toggle_activity_recommendation(string $area, int $id): array {
         ['area' => $area, 'id' => $id] = self::validate_parameters(self::toggle_activity_recommendation_parameters(),
@@ -4355,6 +4368,8 @@ class core_course_external extends external_api {
      * @param int $courseid The course we want to fetch the modules for
      * @param int $sectionid The section we want to fetch the modules for
      * @return array
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
      */
     public static function get_activity_chooser_footer(int $courseid, int $sectionid) {
         [
@@ -4419,10 +4434,14 @@ class core_course_external extends external_api {
     }
 
     /**
-     * Performs one of the edit section actions
+     * Delete the section by id
      *
      * @param int $id section id
      * @return string
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws moodle_exception
+     * @throws restricted_context_exception
      */
     public static function delete_section($id) {
         global $DB;
@@ -4453,4 +4472,63 @@ class core_course_external extends external_api {
         return new external_value(PARAM_BOOL, 'Whether delete operation was successful');
     }
 
+    /**
+     * Parameters for function add_section()
+     *
+     * @return external_function_parameters
+     */
+    public static function add_section_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'course id to add section to', VALUE_REQUIRED),
+            'numsections' => new external_value(PARAM_INT, 'number of sections to add', VALUE_REQUIRED),
+        ]);
+    }
+
+    /**
+     * Add a new section to a course
+     *
+     * @param $courseid
+     * @param $numsections
+     * @return array
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws moodle_exception
+     */
+    public static function add_section($courseid, $numsections) {
+        global $DB;
+        // Validate and normalize parameters.
+        $params = self::validate_parameters(self::add_section_parameters(), ['courseid' => $courseid, 'numsections' => $numsections]);
+        $courseid = $params['courseid'];
+        $numsections = $params['numsections'];
+
+        $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+        require_capability('moodle/course:update', context_course::instance($course->id));
+
+        $sections = [];
+        for($x = 0; $x < $numsections; $x++) {
+            $section = course_create_section($course, 0);
+            $x =  new stdClass();
+            $x->id = $section->id;
+            $sections []= $x;
+
+        }
+
+        return $sections;
+    }
+
+    /**
+     * Return structure for edit_section()
+     *
+     * @since Moodle 3.3
+     * @return external_description
+     */
+    public static function add_section_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'id' => new external_value(PARAM_INT, 'id'),
+                )
+            )
+        );
+    }
 }
