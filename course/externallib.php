@@ -4533,4 +4533,71 @@ class core_course_external extends external_api {
             )
         );
     }
+
+    /**
+     * Parameters for function reorder_outline()
+     *
+     * @return external_function_parameters
+     */
+    public static function reorder_outline_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'course id to add section to', VALUE_REQUIRED),
+            'outline' => new external_value(PARAM_RAW, 'JSON array of course outline information', VALUE_REQUIRED),
+        ]);
+    }
+
+    /**
+     * Reorder the outline of a course
+     *
+     * @param $courseid
+     * @param $outline
+     * @return bool
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws required_capability_exception
+     */
+    public static function reorder_outline($courseid, $outline) {
+        global $DB;
+        // Validate and normalize parameters.
+        $params = self::validate_parameters(self::reorder_outline_parameters(), ['courseid' => $courseid, 'outline' => $outline]);
+        $courseid = $params['courseid'];
+        $outline = json_decode($params['outline'], true);
+
+        $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+        require_capability('moodle/course:update', context_course::instance($course->id));
+
+        $x = 1;
+        foreach($outline as $section) {
+            $s = array_values($section['outline']);
+            $sequence = implode(",", $s);
+
+            $z = new stdClass();
+            $z->section = $x;
+            $z->id = $section['lms_id'];
+
+            // ok so... course and section are a unique key on course_sections, and section is a bigint...
+            $row = $DB->get_record('course_sections', ['course' => $courseid, 'id' => $z->id], 'id, section, sequence', MUST_EXIST);
+            if ($row->section != $z->section) {
+                move_section_to($course, $row->section, $z->section);
+            }
+
+            unset($z->section);
+            $z->sequence = $sequence;
+            $DB->update_record('course_sections', $z);
+
+            $x++;
+        }
+
+        return true;
+    }
+
+    /**
+     * Return structure for reorder_outline()
+     *
+     * @since Moodle 3.3
+     * @return external_description
+     */
+    public static function reorder_outline_returns() {
+        return new external_value(PARAM_BOOL, 'success');
+    }
 }
