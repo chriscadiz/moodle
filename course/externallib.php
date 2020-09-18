@@ -4583,7 +4583,14 @@ class core_course_external extends external_api {
 
             unset($z->section);
             $z->sequence = $sequence;
-            $DB->update_record('course_sections', $z);
+            try {
+                $DB->update_record('course_sections', $z);
+            } catch (dml_write_exception $dmlWriteException) {
+                // if 0 rows are affected ( no change ) it throws an exception.  ok.
+                if ($dmlWriteException->error != "") {
+                    throw $dmlWriteException;
+                }
+            }
 
             $x++;
         }
