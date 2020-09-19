@@ -1068,7 +1068,7 @@ class mod_scorm_external extends external_api {
 
         $result =[
             'warnings' => [],
-            'id' => $fromform->instance
+            'id' => $fromform->coursemodule
         ];
 
         return $result;

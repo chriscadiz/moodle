@@ -4569,6 +4569,21 @@ class core_course_external extends external_api {
         $x = 1;
         foreach($outline as $section) {
             $s = array_values($section['outline']);
+
+            for($l = 0; $l < count($s); $l++) { // in case they moved a topic to a different lecture
+                try {
+                    $q = new stdClass();
+                    $q->id = $s[0];
+                    $q->section = $section['lms_id'];
+                    $DB->update_record('course_modules', $q);
+                } catch (dml_write_exception $dmlWriteException) {
+                    // if 0 rows are affected ( no change ) it throws an exception.  ok.
+                    if ($dmlWriteException->error != "") {
+                        throw $dmlWriteException;
+                    }
+                }
+            }
+
             $sequence = implode(",", $s);
 
             $z = new stdClass();
