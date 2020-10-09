@@ -145,6 +145,18 @@ class core_renderer extends \theme_boost\output\core_renderer {
      * @throws \moodle_exception
      */
     protected function render_custom_menu(custom_menu $menu) {
+        global $CFG;
+        $adminLinks = [];
+        $userLinks = [];
+
+        if (!empty($CFG->adminLinks)) {
+            $adminLinks = explode(",", $CFG->adminLinks);
+        }
+
+        if (!empty($CFG->userLinks)) {
+            $userLinks = explode(",", $CFG->userLinks);
+        }
+
         if ($showmycourses = get_config('theme_trema', 'showmycourses')) {
             $mycourses = $this->page->navigation->get('mycourses');
 
@@ -165,10 +177,20 @@ class core_renderer extends \theme_boost\output\core_renderer {
         // Change Fontawesome's codes by HTML.
         $content = '';
         foreach ($menu->get_children() as $item) {
+
             $context = $item->export_for_template($this);
-            $context->text = preg_replace('/^fa-(\w|-)+/', '<i class="fa \0 mr-1" aria-hidden="true"></i>', $context->text);
-            $context->title = trim(preg_replace('/^fa-(\w|-)+/', '', $context->title));
-            $content .= $this->render_from_template('core/custom_menu_item', $context);
+            $path = parse_url($context->url, PHP_URL_PATH);
+            $query = parse_url($context->url, PHP_URL_QUERY);
+            $url = $path . (!empty($query) ? "?$query" : '');
+
+            if( (!in_array($url, $adminLinks) && !in_array($url, $userLinks)) ||
+                (in_array($url, $userLinks) && !has_capability('moodle/user:create', \context_system::instance())) ||
+                (in_array($url, $adminLinks) && has_capability('moodle/user:create', \context_system::instance())) ) {
+
+                $context->text = preg_replace('/^fa-(\w|-)+/', '<i class="fa \0 mr-1" aria-hidden="true"></i>', $context->text);
+                $context->title = trim(preg_replace('/^fa-(\w|-)+/', '', $context->title));
+                $content .= $this->render_from_template('core/custom_menu_item', $context);
+            }
         }
 
         return $content;

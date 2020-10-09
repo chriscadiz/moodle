@@ -43,6 +43,53 @@ use stdClass;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_renderer extends \core_course_renderer {
+
+    /**
+     * @param cm_info $mod
+     * @param array $displayoptions
+     * @return string
+     */
+    public function course_section_cm_name_title(\cm_info $mod, $displayoptions = array()) {
+        $output = '';
+        $url = $mod->url;
+        if (!$mod->is_visible_on_course_page() || !$url) {
+            // Nothing to be displayed to the user.
+            return $output;
+        }
+
+        //Accessibility: for files get description via icon, this is very ugly hack!
+        $instancename = $mod->get_formatted_name();
+        $altname = $mod->modfullname;
+        // Avoid unnecessary duplication: if e.g. a forum name already
+        // includes the word forum (or Forum, etc) then it is unhelpful
+        // to include that in the accessible description that is added.
+        if (false !== strpos(\core_text::strtolower($instancename),
+                \core_text::strtolower($altname))) {
+            $altname = '';
+        }
+        // File type after name, for alphabetic lists (screen reader).
+        if ($altname) {
+            $altname = get_accesshide(' '.$altname);
+        }
+
+        list($linkclasses, $textclasses) = $this->course_section_cm_classes($mod);
+
+        // Get on-click attribute value if specified and decode the onclick - it
+        // has already been encoded for display (puke).
+        $onclick = htmlspecialchars_decode($mod->onclick, ENT_QUOTES);
+
+        // Display link itself.
+        $activitylink = html_writer::tag('span', $instancename . $altname, array('class' => 'instancename'));
+        if ($mod->uservisible) {
+            $output .= html_writer::link($url, $activitylink, array('class' => 'aalink' . $linkclasses, 'onclick' => $onclick));
+        } else {
+            // We may be displaying this just in order to show information
+            // about visibility, without the actual link ($mod->is_visible_on_course_page()).
+            $output .= html_writer::tag('div', $activitylink, array('class' => $textclasses));
+        }
+        return $output;
+    }
+
     /**
      * Renders the list of courses for frontpage and /course
      *
@@ -254,7 +301,9 @@ class course_renderer extends \core_course_renderer {
         }
 
         //Enrol Link
-        $content .= $OUTPUT->render_from_template('theme_trema/course_enrollment', $['link' => '/user/index.php?id=' . $course->id]);
+        if (\has_capability('moodle/user:create', \context_system::instance())) {
+            $content .= $OUTPUT->render_from_template('theme_trema/course_enrollment', ['link' => '/user/index.php?id=' . $course->id]);
+        }
 
         // Display course summary.
         if ($course->has_summary()) {
@@ -337,3 +386,4 @@ class course_renderer extends \core_course_renderer {
         return $color;
     }
 }
+
