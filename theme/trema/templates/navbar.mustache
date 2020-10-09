@@ -17,34 +17,35 @@
 {{!
     Page navbar.
 }}
-<nav class="fixed-top navbar navbar-light bg-white navbar-expand moodle-has-zindex" aria-label="{{#str}}sitemenubar, admin{{/str}}">
+<nav class="fixed-top navbar navbar-light bg-white navbar-expand moodle-has-zindex">
 
-        <a href="{{{ config.wwwroot }}}" class="navbar-brand aabtn {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
-            {{^ output.should_display_navbar_logo }}
-                d-none d-sm-inline
-            {{/ output.should_display_navbar_logo }}
-                ">
+        <a href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}">
             {{# output.should_display_navbar_logo }}
-                <span class="logo d-none d-sm-inline">
+                <span class="logo d-inline">
                     <img src="{{output.get_compact_logo_url}}" alt="{{sitename}}">
                 </span>
             {{/ output.should_display_navbar_logo }}
-            <span class="site-name d-none d-md-inline">{{{ sitename }}}</span>
+            {{^ output.should_display_navbar_logo }}
+                <span class="site-name d-inline">{{{ sitename }}}</span>
+            {{/ output.should_display_navbar_logo }}       
         </a>
 
-        <ul class="navbar-nav d-none d-md-flex">
-            <!-- custom_menu -->
+        <ul class="navbar-nav trema-custom-menu d-none d-md-flex">
+            <!-- custom_menu -->            
             {{{ output.custom_menu }}}
             <!-- page_heading_menu -->
             {{{ output.page_heading_menu }}}
         </ul>
         <ul class="nav navbar-nav ml-auto">
-            <li class="d-none d-lg-block">
+            <div class="d-none d-lg-block">
                 {{{ output.search_box }}}
-            </li>
+            </div>
+        	<li class="nav-item lang-menu">
+            	{{{ output.render_lang_menu }}}
+        	</li>
             <!-- navbar_plugin_output -->
             <li class="nav-item">
-                {{{ output.navbar_plugin_output }}}
+            {{{ output.navbar_plugin_output }}}
             </li>
             <!-- user_menu -->
             <li class="nav-item d-flex align-items-center">
