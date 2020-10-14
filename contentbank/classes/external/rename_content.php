@@ -87,24 +87,15 @@ class rename_content extends external_api {
                 $content = new $contentclass($record);
                 // Check capability.
                 if ($contenttype->can_manage($content)) {
-                    if (empty(trim($name))) {
-                        // If name is empty don't try to rename and return a more detailed message.
+                    // This content can be renamed.
+                    if ($contenttype->rename_content($content, $params['name'])) {
+                        $result = true;
+                    } else {
                         $warnings[] = [
                             'item' => $contentid,
-                            'warningcode' => 'emptynamenotallowed',
-                            'message' => get_string('emptynamenotallowed', 'core_contentbank')
+                            'warningcode' => 'contentnotrenamed',
+                            'message' => get_string('contentnotrenamed', 'core_contentbank')
                         ];
-                    } else {
-                        // This content can be renamed.
-                        if ($contenttype->rename_content($content, $params['name'])) {
-                            $result = true;
-                        } else {
-                            $warnings[] = [
-                                'item' => $contentid,
-                                'warningcode' => 'contentnotrenamed',
-                                'message' => get_string('contentnotrenamed', 'core_contentbank')
-                            ];
-                        }
                     }
                 } else {
                     // The user has no permission to manage this content.

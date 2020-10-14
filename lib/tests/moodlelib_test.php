@@ -3221,32 +3221,6 @@ class core_moodlelib_testcase extends advanced_testcase {
     }
 
     /**
-     * Test email with custom headers
-     */
-    public function test_send_email_with_custom_header() {
-        global $DB, $CFG;
-        $this->preventResetByRollback();
-        $this->resetAfterTest();
-
-        $touser = $this->getDataGenerator()->create_user();
-        $fromuser = $this->getDataGenerator()->create_user();
-        $fromuser->customheaders = 'X-Custom-Header: foo';
-
-        set_config('allowedemaildomains', 'example.com');
-        set_config('emailheaders', 'X-Fixed-Header: bar');
-
-        $sink = $this->redirectEmails();
-        email_to_user($touser, $fromuser, 'subject', 'message');
-
-        $emails = $sink->get_messages();
-        $this->assertCount(1, $emails);
-        $email = reset($emails);
-        $this->assertContains('X-Custom-Header: foo', $email->header);
-        $this->assertContains("X-Fixed-Header: bar", $email->header);
-        $sink->clear();
-    }
-
-    /**
      * A data provider for testing email diversion
      */
     public function diverted_emails_provider() {
@@ -4712,68 +4686,5 @@ class core_moodlelib_testcase extends advanced_testcase {
                 'expected' => '+0days 0hours 0mins'
             ],
         ];
-    }
-
-    /**
-     * Tests the rename_to_unused_name function with a file.
-     */
-    public function test_rename_to_unused_name_file() {
-        global $CFG;
-
-        // Create a new file in dataroot.
-        $file = $CFG->dataroot . '/argh.txt';
-        file_put_contents($file, 'Frogs');
-
-        // Rename it.
-        $newname = rename_to_unused_name($file);
-
-        // Check new name has expected format.
-        $this->assertRegExp('~/_temp_[a-f0-9]+$~', $newname);
-
-        // Check it's still in the same folder.
-        $this->assertEquals($CFG->dataroot, dirname($newname));
-
-        // Check file can be loaded.
-        $this->assertEquals('Frogs', file_get_contents($newname));
-
-        // OK, delete the file.
-        unlink($newname);
-    }
-
-    /**
-     * Tests the rename_to_unused_name function with a directory.
-     */
-    public function test_rename_to_unused_name_dir() {
-        global $CFG;
-
-        // Create a new directory in dataroot.
-        $file = $CFG->dataroot . '/arghdir';
-        mkdir($file);
-
-        // Rename it.
-        $newname = rename_to_unused_name($file);
-
-        // Check new name has expected format.
-        $this->assertRegExp('~/_temp_[a-f0-9]+$~', $newname);
-
-        // Check it's still in the same folder.
-        $this->assertEquals($CFG->dataroot, dirname($newname));
-
-        // Check it's still a directory
-        $this->assertTrue(is_dir($newname));
-
-        // OK, delete the directory.
-        rmdir($newname);
-    }
-
-    /**
-     * Tests the rename_to_unused_name function with error cases.
-     */
-    public function test_rename_to_unused_name_failure() {
-        global $CFG;
-
-        // Rename a file that doesn't exist.
-        $file = $CFG->dataroot . '/argh.txt';
-        $this->assertFalse(rename_to_unused_name($file));
     }
 }

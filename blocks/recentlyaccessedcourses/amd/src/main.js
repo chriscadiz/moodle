@@ -32,7 +32,6 @@ define(
         'core/templates',
         'core_course/events',
         'core_course/repository',
-        'core/aria',
     ],
     function(
         $,
@@ -42,8 +41,7 @@ define(
         PagedContentPagingBar,
         Templates,
         CourseEvents,
-        CoursesRepository,
-        Aria
+        CoursesRepository
     ) {
 
         // Constants.
@@ -98,7 +96,7 @@ define(
             var pagingBar = root.find(SELECTORS.PAGING_BAR);
             pagingBar.css('opacity', 1);
             pagingBar.css('visibility', 'visible');
-            Aria.unhide(pagingBar);
+            pagingBar.attr('aria-hidden', 'false');
         };
 
         /**
@@ -110,7 +108,7 @@ define(
             var pagingBar = root.find(SELECTORS.PAGING_BAR);
             pagingBar.css('opacity', 0);
             pagingBar.css('visibility', 'hidden');
-            Aria.hide(pagingBar);
+            pagingBar.attr('aria-hidden', 'true');
         };
 
         /**
@@ -208,11 +206,6 @@ define(
                 var overflow = (viewIndex + availableVisibleCards) - numberOfCourses;
                 start = viewIndex - overflow;
                 start = start >= 0 ? start : 0;
-            }
-
-            // At least show one card.
-            if (availableVisibleCards === 0) {
-                availableVisibleCards = 1;
             }
 
             var coursesToShow = allCourses.slice(start, start + availableVisibleCards);

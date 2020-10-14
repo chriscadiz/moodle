@@ -96,7 +96,7 @@ class data_controller extends \core_customfield\data_controller {
             $this->save();
         }
 
-        if (array_key_exists('text', $fromform)) {
+        if ($fromform['text']) {
             $textoptions = $this->value_editor_options();
             $data = (object) ['field_editor' => $fromform];
             $data = file_postupdate_standard_editor($data, 'field', $textoptions, $textoptions['context'],

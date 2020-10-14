@@ -3992,16 +3992,6 @@ function get_user_fieldnames() {
 }
 
 /**
- * Returns the string of the language for the new user.
- *
- * @return string language for the new user
- */
-function get_newuser_language() {
-    global $CFG, $SESSION;
-    return (!empty($CFG->autolangusercreation) && !empty($SESSION->lang)) ? $SESSION->lang : $CFG->lang;
-}
-
-/**
  * Creates a bare-bones user record
  *
  * @todo Outline auth types and provide code example
@@ -4012,7 +4002,7 @@ function get_newuser_language() {
  * @return stdClass A complete user object
  */
 function create_user_record($username, $password, $auth = 'manual') {
-    global $CFG, $DB, $SESSION;
+    global $CFG, $DB;
     require_once($CFG->dirroot.'/user/profile/lib.php');
     require_once($CFG->dirroot.'/user/lib.php');
 
@@ -4048,7 +4038,7 @@ function create_user_record($username, $password, $auth = 'manual') {
     // user CFG lang for user if $newuser->lang is empty
     // or $user->lang is not an installed language.
     if (empty($newuser->lang) || !get_string_manager()->translation_exists($newuser->lang)) {
-        $newuser->lang = get_newuser_language();
+        $newuser->lang = $CFG->lang;
     }
     $newuser->confirmed = 1;
     $newuser->lastip = getremoteaddr();
@@ -4388,7 +4378,7 @@ function guest_user() {
 
     if ($newuser = $DB->get_record('user', array('id' => $CFG->siteguest))) {
         $newuser->confirmed = 1;
-        $newuser->lang = get_newuser_language();
+        $newuser->lang = $CFG->lang;
         $newuser->lastip = getremoteaddr();
     }
 
@@ -5036,7 +5026,7 @@ function get_complete_user_data($field, $value, $mnethostid = null, $throwexcept
     }
     if (isguestuser($user)) {
         // Guest language always same as site.
-        $user->lang = get_newuser_language();
+        $user->lang = $CFG->lang;
         // Name always in current language.
         $user->firstname = get_string('guestuser');
         $user->lastname = ' ';
@@ -6231,15 +6221,6 @@ function email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', 
         $mail->addCustomHeader('X-Moodle-Originating-Script: ' . $originheader);
     }
 
-    if (!empty($CFG->emailheaders)) {
-        $headers = array_map('trim', explode("\n", $CFG->emailheaders));
-        foreach ($headers as $header) {
-            if (!empty($header)) {
-                $mail->addCustomHeader($header);
-            }
-        }
-    }
-
     if (!empty($from->priority)) {
         $mail->Priority = $from->priority;
     }
@@ -6470,7 +6451,7 @@ function setnew_password_and_mail($user, $fasthash = false) {
     // We try to send the mail in language the user understands,
     // unfortunately the filter_string() does not support alternative langs yet
     // so multilang will not work properly for site->fullname.
-    $lang = empty($user->lang) ? get_newuser_language() : $user->lang;
+    $lang = empty($user->lang) ? $CFG->lang : $user->lang;
 
     $site  = get_site();
 
@@ -9800,39 +9781,6 @@ function get_performance_info() {
 }
 
 /**
- * Renames a file or directory to a unique name within the same directory.
- *
- * This function is designed to avoid any potential race conditions, and select an unused name.
- *
- * @param string $filepath Original filepath
- * @param string $prefix Prefix to use for the temporary name
- * @return string|bool New file path or false if failed
- * @since Moodle 3.10
- */
-function rename_to_unused_name(string $filepath, string $prefix = '_temp_') {
-    $dir = dirname($filepath);
-    $basename = $dir . '/' . $prefix;
-    $limit = 0;
-    while ($limit < 100) {
-        // Select a new name based on a random number.
-        $newfilepath = $basename . md5(mt_rand());
-
-        // Attempt a rename to that new name.
-        if (@rename($filepath, $newfilepath)) {
-            return $newfilepath;
-        }
-
-        // The first time, do some sanity checks, maybe it is failing for a good reason and there
-        // is no point trying 100 times if so.
-        if ($limit === 0 && (!file_exists($filepath) || !is_writable($dir))) {
-            return false;
-        }
-        $limit++;
-    }
-    return false;
-}
-
-/**
  * Delete directory or only its content
  *
  * @param string $dir directory path
@@ -9844,19 +9792,6 @@ function remove_dir($dir, $contentonly=false) {
         // Nothing to do.
         return true;
     }
-
-    if (!$contentonly) {
-        // Start by renaming the directory; this will guarantee that other processes don't write to it
-        // while it is in the process of being deleted.
-        $tempdir = rename_to_unused_name($dir);
-        if ($tempdir) {
-            // If the rename was successful then delete the $tempdir instead.
-            $dir = $tempdir;
-        }
-        // If the rename fails, we will continue through and attempt to delete the directory
-        // without renaming it since that is likely to at least delete most of the files.
-    }
-
     if (!$handle = opendir($dir)) {
         return false;
     }

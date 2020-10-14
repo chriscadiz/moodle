@@ -142,9 +142,4 @@ $messageproviders = array (
             'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDOFF,
         ),
     ],
-
-    // Infected files.
-    'infected' => array(
-        'capability'  => 'moodle/site:config',
-    ),
 );

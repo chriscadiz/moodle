@@ -246,7 +246,6 @@ class generator_testcase extends \advanced_testcase {
             'addto' => '/regex11/',
             'coremajor' => null,
             'coreminor' => null,
-            'metadatasettings' => null,
         ];
 
         $this->assertEquals($expected, $data);

@@ -229,13 +229,10 @@ define(['jquery', 'core/notification', 'core/str', 'core/form-autocomplete',
         // There are 3 types of filter right now.
         var filterPanel = this._region.find('[data-region="configure-filters"]');
         var filters = filterPanel.find('select');
-        var preferenceNames = [];
 
         this._filters = [];
         filters.each(function(idx, ele) {
-            var element = $(ele);
-            this._filters.push(element.val());
-            preferenceNames.push('assign_' + element.prop('name'));
+            this._filters.push($(ele).val());
         }.bind(this));
 
         // Update the active filter string.
@@ -253,6 +250,7 @@ define(['jquery', 'core/notification', 'core/str', 'core/form-autocomplete',
 
         var select = this._region.find('[data-action=change-user]');
         var currentUserID = select.data('currentuserid');
+        var preferenceNames = ['assign_filter', 'assign_workflowfilter', 'assign_markerfilter'];
         this._updateFilterPreferences(currentUserID, this._filters, preferenceNames).done(function() {
             // Reload the list of users to apply the new filters.
             if (!this._loadAllUsers()) {

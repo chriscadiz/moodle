@@ -949,7 +949,9 @@ class auth_plugin_ldap extends auth_plugin_base {
                 //
                 // The cast to int is a workaround for MDL-53959.
                 $user->suspended = (int)$this->is_user_suspended($user);
-
+                if (empty($user->lang)) {
+                    $user->lang = $CFG->lang;
+                }
                 if (empty($user->calendartype)) {
                     $user->calendartype = $CFG->calendartype;
                 }

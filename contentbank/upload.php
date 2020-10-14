@@ -25,25 +25,12 @@
 require('../config.php');
 require_once("$CFG->dirroot/contentbank/files_form.php");
 
-use core\output\notification;
-
 require_login();
 
 $contextid = optional_param('contextid', \context_system::instance()->id, PARAM_INT);
 $context = context::instance_by_id($contextid, MUST_EXIST);
 
 require_capability('moodle/contentbank:upload', $context);
-
-$cb = new \core_contentbank\contentbank();
-
-$id = optional_param('id', null, PARAM_INT);
-if ($id) {
-    $content = $cb->get_content_from_id($id);
-    $contenttype = $content->get_content_type_instance();
-    if (!$contenttype->can_manage($content) || !$contenttype->can_upload()) {
-        print_error('nopermissions', 'error', $returnurl, get_string('replacecontent', 'contentbank'));
-    }
-}
 
 $title = get_string('contentbank');
 \core_contentbank\helper::get_page_ready($context, $title, true);
@@ -66,12 +53,8 @@ if (has_capability('moodle/user:ignoreuserquota', $context)) {
     $maxareabytes = FILE_AREA_MAX_BYTES_UNLIMITED;
 }
 
-if ($id) {
-    $extensions = $contenttype->get_manageable_extensions();
-    $accepted = implode(',', $extensions);
-} else {
-    $accepted = $cb->get_supported_extensions_as_string($context);
-}
+$cb = new \core_contentbank\contentbank();
+$accepted = $cb->get_supported_extensions_as_string($context);
 
 $data = new stdClass();
 $options = array(
@@ -83,9 +66,7 @@ $options = array(
 );
 file_prepare_standard_filemanager($data, 'files', $options, $context, 'contentbank', 'public', 0);
 
-$mform = new contentbank_files_form(null, ['contextid' => $contextid, 'data' => $data, 'options' => $options, 'id' => $id]);
-
-$error = '';
+$mform = new contentbank_files_form(null, ['contextid' => $contextid, 'data' => $data, 'options' => $options]);
 
 if ($mform->is_cancelled()) {
     redirect($returnurl);
@@ -97,24 +78,16 @@ if ($mform->is_cancelled()) {
     $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $formdata->file, 'itemid, filepath, filename', false);
     if (!empty($files)) {
         $file = reset($files);
-        if ($id) {
-            $content = $contenttype->replace_content($file, $content);
-        } else {
-            $content = $cb->create_content_from_file($context, $USER->id, $file);
-        }
+        $content = $cb->create_content_from_file($context, $USER->id, $file);
+        file_save_draft_area_files($formdata->file, $contextid, 'contentbank', 'public', $content->get_id());
         $viewurl = new \moodle_url('/contentbank/view.php', ['id' => $content->get_id(), 'contextid' => $contextid]);
         redirect($viewurl);
-    } else {
-        $error = get_string('errornofile', 'contentbank');
     }
+    redirect($returnurl);
 }
 
 echo $OUTPUT->header();
 echo $OUTPUT->box_start('generalbox');
-
-if (!empty($error)) {
-    echo $OUTPUT->notification($error, notification::NOTIFY_ERROR);
-}
 
 $mform->display();
 

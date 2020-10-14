@@ -784,7 +784,7 @@ abstract class question_cbm {
             // errors for people who have used TGM's patches.
             return 0;
         }
-        if ($fraction <= question_utils::MARK_TOLERANCE) {
+        if ($fraction <= 0.00000005) {
             return self::$wrongscore[$certainty];
         } else {
             return self::$rightscore[$certainty] * $fraction;

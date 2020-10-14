@@ -1444,18 +1444,22 @@ class flexible_table {
             }
         }
 
-        $this->set_hide_show_preferences();
-        $this->set_sorting_preferences();
-        $this->set_initials_preferences();
-
-        // Now, reduce the width of collapsed columns and remove the width from columns that should be expanded.
+        // Now, update the column attributes for collapsed columns
         foreach (array_keys($this->columns) as $column) {
             if (!empty($this->prefs['collapse'][$column])) {
                 $this->column_style[$column]['width'] = '10px';
-            } else {
-                unset($this->column_style[$column]['width']);
             }
         }
+
+        // Now, update the column attributes for collapsed columns
+        foreach (array_keys($this->columns) as $column) {
+            if (!empty($this->prefs['collapse'][$column])) {
+                $this->column_style[$column]['width'] = '10px';
+            }
+        }
+
+        $this->set_sorting_preferences();
+        $this->set_initials_preferences();
 
         if (empty($this->baseurl)) {
             debugging('You should set baseurl when using flexible_table.');

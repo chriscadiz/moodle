@@ -143,12 +143,7 @@ $mform->set_data($data);
 
 if ($mform->is_cancelled()) {
     if ($return && !empty($cm->id)) {
-        $urlparams = [
-            'id' => $cm->id, // We always need the activity id.
-            'forceview' => 1, // Stop file downloads in resources.
-        ];
-        $activityurl = new moodle_url("/mod/$module->name/view.php", $urlparams);
-        redirect($activityurl);
+        redirect("$CFG->wwwroot/mod/$module->name/view.php?id=$cm->id");
     } else {
         redirect(course_get_url($course, $cw->section, array('sr' => $sectionreturn)));
     }

@@ -228,7 +228,7 @@ class editor_framework implements H5peditorStorage {
         if ($libraries !== null) {
             // Get details for the specified libraries.
             $librariesin = [];
-            $fields = 'title, runnable, metadatasettings';
+            $fields = 'title, runnable';
 
             foreach ($libraries as $library) {
                 $params = [
@@ -242,12 +242,11 @@ class editor_framework implements H5peditorStorage {
                 if ($details) {
                     $library->title = $details->title;
                     $library->runnable = $details->runnable;
-                    $library->metadataSettings = json_decode($details->metadatasettings);
                     $librariesin[] = $library;
                 }
             }
         } else {
-            $fields = 'id, machinename as name, title, majorversion, minorversion, metadatasettings';
+            $fields = 'id, machinename as name, title, majorversion, minorversion';
             $librariesin = api::get_contenttype_libraries($fields);
         }
 

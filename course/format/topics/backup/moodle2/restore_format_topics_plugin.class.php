@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Specialised restore for Topics course format.
+ * Specialised restore for format_topics
  *
  * @package   format_topics
  * @category  backup
@@ -26,9 +26,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Specialised restore for Topics course format.
+ * Specialised restore for format_topics
  *
- * Processes 'numsections' from the old backup files and hides sections that used to be "orphaned".
+ * Processes 'numsections' from the old backup files and hides sections that used to be "orphaned"
  *
  * @package   format_topics
  * @category  backup
@@ -48,12 +48,12 @@ class restore_format_topics_plugin extends restore_format_plugin {
      */
     protected function need_restore_numsections() {
         $backupinfo = $this->step->get_task()->get_info();
-        $backuprelease = $backupinfo->backup_release; // The major version: 2.9, 3.0, 3.10...
-        return version_compare($backuprelease, '3.3', '<');
+        $backuprelease = $backupinfo->backup_release;
+        return version_compare($backuprelease, '3.3', 'lt');
     }
 
     /**
-     * Creates a dummy path element in order to be able to execute code after restore.
+     * Creates a dummy path element in order to be able to execute code after restore
      *
      * @return restore_path_element[]
      */
@@ -76,20 +76,16 @@ class restore_format_topics_plugin extends restore_format_plugin {
     }
 
     /**
-     * Dummy process method.
-     *
-     * @return void
+     * Dummy process method
      */
     public function process_dummy_course() {
 
     }
 
     /**
-     * Executed after course restore is complete.
+     * Executed after course restore is complete
      *
-     * This method is only executed if course configuration was overridden.
-     *
-     * @return void
+     * This method is only executed if course configuration was overridden
      */
     public function after_restore_course() {
         global $DB;

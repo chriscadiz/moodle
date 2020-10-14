@@ -52,14 +52,12 @@ class rename_content_testcase extends \externallib_advanced_testcase {
      */
     public function rename_content_provider() {
         return [
-            'Standard name' => ['New name', 'New name', true],
-            'Name with digits' => ['Today is 17/04/2017', 'Today is 17/04/2017', true],
-            'Name with symbols' => ['Follow us: @moodle', 'Follow us: @moodle', true],
-            'Name with tags' => ['This is <b>bold</b>', 'This is bold', true],
-            'Long name' => [str_repeat('a', 100), str_repeat('a', 100), true],
-            'Too long name' => [str_repeat('a', 300), str_repeat('a', 255), true],
-            'Empty name' => ['', 'Test content ', false],
-            'Blanks only' => ['  ', 'Test content ', false],
+            'Standard name' => ['New name', 'New name'],
+            'Name with digits' => ['Today is 17/04/2017', 'Today is 17/04/2017'],
+            'Name with symbols' => ['Follow us: @moodle', 'Follow us: @moodle'],
+            'Name with tags' => ['This is <b>bold</b>', 'This is bold'],
+            'Long name' => [str_repeat('a', 100), str_repeat('a', 100)],
+            'Too long name' => [str_repeat('a', 300), str_repeat('a', 255)]
         ];
     }
 
@@ -68,12 +66,11 @@ class rename_content_testcase extends \externallib_advanced_testcase {
      *
      * @dataProvider    rename_content_provider
      * @param   string  $newname    The name to set
-     * @param   string   $expectedname   The name result
-     * @param   bool   $expectedresult   The bolean result expected when renaming
+     * @param   string   $expected   The name result
      *
      * @covers ::execute
      */
-    public function test_rename_content_with_permission(string $newname, string $expectedname, bool $expectedresult) {
+    public function test_rename_content_with_permission(string $newname, string $expected) {
         global $DB;
         $this->resetAfterTest();
 
@@ -94,9 +91,10 @@ class rename_content_testcase extends \externallib_advanced_testcase {
         // Call the WS and check the content is renamed as expected.
         $result = rename_content::execute($content->get_id(), $newname);
         $result = external_api::clean_returnvalue(rename_content::execute_returns(), $result);
-        $this->assertEquals($expectedresult, $result['result']);
+        $this->assertTrue($result['result']);
         $record = $DB->get_record('contentbank_content', ['id' => $content->get_id()]);
-        $this->assertEquals($expectedname, $record->name);
+        $this->assertNotEquals($oldname, $record->name);
+        $this->assertEquals($expected, $record->name);
 
         // Call the WS using an unexisting contentid and check an error is thrown.
         $this->expectException(\invalid_response_exception::class);

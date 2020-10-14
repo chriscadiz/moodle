@@ -245,8 +245,8 @@ body.path-question-type {
     width: 7em;
     padding: 0.5em;
     margin-bottom: 1.8em;
-    background-color: $gray-300;
-    border: 1px solid darken($gray-300, 7%);
+    background-color: $gray-lighter;
+    border: 1px solid darken($gray-lighter, 7%);
 
     @include border-radius(2px);
 }
@@ -350,14 +350,14 @@ body.path-question-type {
 
 .que .correctness {
     &.correct {
-        background-color: $success;
+        background-color: $state-success-text;
     }
     &.partiallycorrect {
-        background-color: $warning;
+        background-color: $state-warning-text;
     }
     &.notanswered,
     &.incorrect {
-        background-color: $danger;
+        background-color: $state-danger-text;
     }
 }
 

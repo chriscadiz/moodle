@@ -17,12 +17,6 @@ select {
     }
 }
 
-.path-mod-choice {
-    .choices .option label {
-        vertical-align: top;
-    }
-}
-
 .path-mod-feedback .feedback_form .col-form-label {
     display: block !important; /* stylelint-disable-line declaration-no-important */
 }
@@ -493,15 +487,12 @@ $grading-content-show-content-button-padding-left: calc(#{map-get($spacers, 2) *
 }
 
 .path-mod-forum .unified-grader {
-    @include media-breakpoint-up(xs) {
-        .navbar {
-            max-height: none;
-            z-index: 1;
-        }
+    .navbar {
+        max-height: none;
+        z-index: 1;
     }
 
     .body-container {
-        overflow: auto;
         &.hidden {
             display: none !important; /* stylelint-disable-line declaration-no-important */
         }
@@ -513,8 +504,8 @@ $grading-content-show-content-button-padding-left: calc(#{map-get($spacers, 2) *
     }
 
     .grader-grading-panel {
-        top: 0;
         position: absolute;
+        top: 0;
         height: 100%;
         z-index: 0;
         width: $grading-drawer-width;
@@ -920,13 +911,6 @@ $grading-content-show-content-button-padding-left: calc(#{map-get($spacers, 2) *
     .path-mod-forum .unified-grader {
         .grader-grading-panel {
             width: 100%;
-            position: fixed;
-            height: calc(100vh - 50px);
-            overflow: scroll;
-            top: 50px;
-        }
-        .body-container {
-            overflow: visible;
         }
     }
 }
@@ -965,6 +949,10 @@ $grading-content-show-content-button-padding-left: calc(#{map-get($spacers, 2) *
 .breadcrumb-button .singlebutton {
     float: left;
     margin-left: 4px;
+}
+
+.ie .row-fluid .desktop-first-column {
+    margin-left: 0;
 }
 
 .langmenu form {
@@ -1045,7 +1033,7 @@ div#dock {
         }
 
         > tbody > tr:nth-of-type(even) {
-            background-color: $table-accent-bg;
+            background-color: $table-bg-accent;
         }
 
         .rblock label {
@@ -1183,8 +1171,8 @@ div#dock {
 
     span.qnbutton {
         cursor: default;
-        background-color: $input-disabled-bg;
-        color: $gray-700;
+        background-color: $input-bg-disabled;
+        color: $gray;
     }
 
     a.qnbutton:hover,
@@ -1230,28 +1218,28 @@ div#dock {
 
     .qnbutton.correct .trafficlight {
         background-image: url([[pix:theme|mod/quiz/checkmark]]);
-        background-color: $success;
+        background-color: $state-success-text;
     }
 
     .qnbutton.blocked .trafficlight {
         background-image: url([[pix:core|t/locked]]);
-        background-color: $input-disabled-bg;
+        background-color: $input-bg-disabled;
     }
 
     .qnbutton.notanswered .trafficlight,
     .qnbutton.incorrect .trafficlight {
-        background-color: $danger;
+        background-color: $state-danger-text;
     }
 
     .qnbutton.partiallycorrect .trafficlight {
         background-image: url([[pix:theme|mod/quiz/whitecircle]]);
-        background-color: $warning;
+        background-color: $state-warning-text;
     }
 
     .qnbutton.complete .trafficlight,
     .qnbutton.answersaved .trafficlight,
     .qnbutton.requiresgrading .trafficlight {
-        background-color: $gray-600;
+        background-color: $gray-light;
     }
 }
 

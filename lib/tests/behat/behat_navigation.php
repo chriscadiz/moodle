@@ -391,7 +391,7 @@ class behat_navigation extends behat_base {
         )";
 
         // Adding an extra click we need to show the 'Log in' link.
-        if (!$this->evaluate_script($navbuttonjs)) {
+        if (!$this->getSession()->getDriver()->evaluateScript($navbuttonjs)) {
             return false;
         }
 
@@ -526,7 +526,7 @@ class behat_navigation extends behat_base {
 
                 }
             }
-            $this->execute('behat_general::i_visit', [$url]);
+            $this->getSession()->visit($this->locate_path($url->out_as_local_url()));
         }
 
         // Restore global user variable.
@@ -549,7 +549,8 @@ class behat_navigation extends behat_base {
      * @throws Exception if the specified page cannot be determined.
      */
     public function i_am_on_page(string $page) {
-        $this->execute('behat_general::i_visit', [$this->resolve_page_helper($page)]);
+        $this->getSession()->visit($this->locate_path(
+                $this->resolve_page_helper($page)->out_as_local_url()));
     }
 
     /**
@@ -628,7 +629,8 @@ class behat_navigation extends behat_base {
      * @throws Exception if the specified page cannot be determined.
      */
     public function i_am_on_page_instance(string $identifier, string $type) {
-        $this->execute('behat_general::i_visit', [$this->resolve_page_instance_helper($identifier, $type)]);
+        $this->getSession()->visit($this->locate_path(
+                $this->resolve_page_instance_helper($identifier, $type)->out_as_local_url()));
     }
 
     /**
@@ -751,11 +753,11 @@ class behat_navigation extends behat_base {
         global $DB;
         $course = $DB->get_record("course", array("fullname" => $coursefullname), 'id', MUST_EXIST);
         $url = new moodle_url('/course/view.php', ['id' => $course->id]);
-        $this->execute('behat_general::i_visit', [$url]);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
     }
 
     /**
-     * Open the course homepage with editing mode enabled.
+     * Opens the course homepage with editing mode on.
      *
      * @Given /^I am on "(?P<coursefullname_string>(?:[^"]|\\")*)" course homepage with editing mode on$/
      * @throws coding_exception
@@ -764,22 +766,9 @@ class behat_navigation extends behat_base {
      */
     public function i_am_on_course_homepage_with_editing_mode_on($coursefullname) {
         global $DB;
-
         $course = $DB->get_record("course", array("fullname" => $coursefullname), 'id', MUST_EXIST);
         $url = new moodle_url('/course/view.php', ['id' => $course->id]);
-
-        if ($this->running_javascript() && $sesskey = $this->get_sesskey()) {
-            // Javascript is running so it is possible to grab the session ket and jump straight to editing mode.
-            $url->param('edit', 1);
-            $url->param('sesskey', $sesskey);
-            $this->execute('behat_general::i_visit', [$url]);
-
-            return;
-        }
-
-        // Visit the course page.
-        $this->execute('behat_general::i_visit', [$url]);
-
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
         try {
             $this->execute("behat_forms::press_button", get_string('turneditingon'));
         } catch (Exception $e) {
@@ -1001,6 +990,6 @@ class behat_navigation extends behat_base {
         if (!preg_match($fixtureregex, $url)) {
             throw new coding_exception("URL {$url} is not a fixture URL");
         }
-        $this->execute('behat_general::i_visit', [$url]);
+        $this->getSession()->visit($this->locate_path($url));
     }
 }

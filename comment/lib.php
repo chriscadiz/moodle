@@ -589,7 +589,8 @@ class comment {
             $c->avatar = $OUTPUT->user_picture($u, array('size'=>18));
             $c->userid = $u->id;
 
-            if ($this->can_delete($c)) {
+            $candelete = $this->can_delete($c->id);
+            if (($USER->id == $u->id) || !empty($candelete)) {
                 $c->delete = true;
             }
             $comments[] = $c;
@@ -799,22 +800,16 @@ class comment {
     /**
      * Delete a comment
      *
-     * @param  int|stdClass $comment The id of a comment, or a comment record.
+     * @param  int $commentid
      * @return bool
      */
-    public function delete($comment) {
-        global $DB;
-        if (is_object($comment)) {
-            $commentid = $comment->id;
-        } else {
-            $commentid = $comment;
-            $comment = $DB->get_record('comments', ['id' => $commentid]);
-        }
-
-        if (!$comment) {
+    public function delete($commentid) {
+        global $DB, $USER;
+        $candelete = has_capability('moodle/comment:delete', $this->context);
+        if (!$comment = $DB->get_record('comments', array('id'=>$commentid))) {
             throw new comment_exception('dbupdatefailed');
         }
-        if (!$this->can_delete($comment)) {
+        if (!($USER->id == $comment->userid || !empty($candelete))) {
             throw new comment_exception('nopermissiontocomment');
         }
         $DB->delete_records('comments', array('id'=>$commentid));
@@ -981,35 +976,13 @@ class comment {
     }
 
     /**
-     * Returns true if the user can delete this comment.
-     *
-     * The user can delete comments if it is one they posted and they can still make posts,
-     * or they have the capability to delete comments.
-     *
-     * A database call is avoided if a comment record is passed.
-     *
-     * @param int|stdClass $comment The id of a comment, or a comment record.
+     * Returns true if the user can delete this comment
+     * @param int $commentid
      * @return bool
      */
-    public function can_delete($comment) {
-        global $USER, $DB;
-        if (is_object($comment)) {
-            $commentid = $comment->id;
-        } else {
-            $commentid = $comment;
-        }
-
+    public function can_delete($commentid) {
         $this->validate(array('commentid'=>$commentid));
-
-        if (!is_object($comment)) {
-            // Get the comment record from the database.
-            $comment = $DB->get_record('comments', array('id' => $commentid), 'id, userid', MUST_EXIST);
-        }
-
-        $hascapability = has_capability('moodle/comment:delete', $this->context);
-        $owncomment = $USER->id == $comment->userid;
-
-        return ($hascapability || ($owncomment && $this->can_post()));
+        return has_capability('moodle/comment:delete', $this->context);
     }
 
     /**

@@ -368,7 +368,7 @@
 
     &.generaltable {
         .levelodd {
-            background-color: $table-accent-bg;
+            background-color: $table-bg-accent;
         }
 
         .leveleven {
@@ -401,7 +401,7 @@
         .heading .cell,
         .cell.category,
         .avg .cell {
-            background-color: $gray-100;
+            background-color: $gray-lightest;
         }
 
         table .clickable {
@@ -418,7 +418,7 @@
 
     &.generaltable {
         .levelodd {
-            background-color: $table-accent-bg;
+            background-color: $table-bg-accent;
         }
 
         .leveleven {

@@ -695,7 +695,7 @@ class question_attempt {
     /** @return bool whether this question attempt has a non-zero maximum mark. */
     public function has_marks() {
         // Since grades are stored in the database as NUMBER(12,7).
-        return $this->maxmark >= question_utils::MARK_TOLERANCE;
+        return $this->maxmark >= 0.00000005;
     }
 
     /**
@@ -1158,8 +1158,7 @@ class question_attempt {
         }
 
         $maxmark = $this->get_max_mark();
-        if ($mark > $maxmark * $this->get_max_fraction() + question_utils::MARK_TOLERANCE ||
-                $mark < $maxmark * $this->get_min_fraction() - question_utils::MARK_TOLERANCE) {
+        if ($mark > $maxmark * $this->get_max_fraction() || $mark < $maxmark * $this->get_min_fraction()) {
             return get_string('manualgradeoutofrange', 'question');
         }
 
