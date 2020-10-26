@@ -86,6 +86,8 @@ if (get_home_page() != HOMEPAGE_SITE) {
                 navigation_node::TYPE_SETTING);
         }
     }
+} else {
+    redirect($CFG->wwwroot . '/login/index.php');
 }
 
 // Trigger event.
