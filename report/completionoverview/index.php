@@ -158,7 +158,7 @@ if (!empty($result) && $courseid != 0) {
                           INNER JOIN {role} r ON r.id = ra.roleid and r.id = 5
                           LEFT OUTER JOIN {course_completions} cc ON (cc.course = c.id) AND cc.userid = u.id
                           LEFT JOIN
-                          (SELECT u.id AS userid,c.id as courseid, g.finalgrade AS finalgrade
+                          (SELECT u.id AS userid,c.id as courseid, CONCAT(ROUND((g.finalgrade/g.rawgrademax) * 100.00, 2), '%') AS finalgrade
                           FROM {user} u
                           JOIN {grade_grades} g ON g.userid = u.id
                           JOIN {grade_items} gi ON g.itemid =  gi.id
