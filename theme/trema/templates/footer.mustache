@@ -19,3 +19,13 @@
 
     Page footer.
 }}
+<footer id="page-footer">
+    <div class="container">
+        <div class="row gtr-200 gtr-uniform">
+            <section class="col-12 text-center col-12-medium col-12-xsmall footer-info smalltext {{^footerinfo}}d-none{{/footerinfo}}">
+                {{{ output.standard_end_of_body_html }}}
+            </section>
+        </div>
+    </div>
+    {{#footerinfo}}{{/footerinfo}}
+</footer>
