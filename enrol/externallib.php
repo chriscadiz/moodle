@@ -1312,7 +1312,7 @@ class core_role_external extends external_api {
      * @param array $assignments An array of manual role assignment
      */
     public static function assign_roles($assignments) {
-        global $DB;
+        global $DB, $ACCESSLIB_PRIVATE;
 
         // Do basic automatic PARAM checks on incoming data, using params description
         // If any problems are found then exceptions are thrown with helpful error messages
@@ -1340,12 +1340,17 @@ class core_role_external extends external_api {
                 throw new invalid_parameter_exception('Can not assign roleid='.$assignment['roleid'].' in contextid='.$assignment['contextid']);
             }
 
+            // unassign all current roles we manage via the generator
+            role_unassign(1, $assignment['userid'], $context->id);
+            role_unassign(2, $assignment['userid'], $context->id);
+
             if ($assignment['roleid'] == 0) { // special handling for site admins
                 $user = (int) $assignment['userid'];
                 $siteadmins[$user] = $user;
             } else {
                 role_assign($assignment['roleid'], $assignment['userid'], $context->id);
             }
+            $ACCESSLIB_PRIVATE->dirtyusers = [$assignment['userid'] => true];
         }
 
         set_config('siteadmins', implode(',', $siteadmins));
