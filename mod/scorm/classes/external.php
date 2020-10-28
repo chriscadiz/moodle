@@ -992,11 +992,13 @@ class mod_scorm_external extends external_api {
             'section' => new external_value(PARAM_INT, 'section id'),
             'packagefile' => new external_value(PARAM_INT, 'package file id'),
             'name' => new external_value(PARAM_TEXT, 'activity name'),
-            'type' => new external_value(PARAM_INT, '3 if quiz, 5 if topic')
+            'type' => new external_value(PARAM_INT, '3 if quiz, 5 if topic'),
+            'passmark' => new external_value(PARAM_INT, 'quiz passmark if quiz type'),
+            'weight' => new external_value(PARAM_INT, 'quiz weight towards overall course grade')
         ]);
     }
 
-    public static function create_activity($course, $section, $packagefile, $name, $type) {
+    public static function create_activity($course, $section, $packagefile, $name, $type, $passmark, $weight) {
         global $DB, $CFG, $USER;
 
         $USER->ignoresesskey = true;
@@ -1006,7 +1008,9 @@ class mod_scorm_external extends external_api {
             'section' => $section,
             'packagefile' => $packagefile,
             'name' => $name,
-            'type' => $type
+            'type' => $type,
+            'passmark' => $passmark,
+            'weight' => $weight,
         ]);
 
         $course = $DB->get_record('course', array('id'=>$course), '*', MUST_EXIST);
@@ -1048,9 +1052,9 @@ class mod_scorm_external extends external_api {
         $fromform->hidetoc = "1";
         $fromform->nav = "1";
         $fromform->grademethod = ($type == 3) ? "1" : "0";
-        $fromform->maxgrade = "100";
+        $fromform->maxgrade = ($type == 3) ? "100" : "1";
         $fromform->maxattempt = "0";
-        $fromform->whatgrade = "0";
+        $fromform->whatgrade = ($type == 3) ? "$passmark" : "0";
         $fromform->forcecompleted = "0";
         $fromform->auto = "0";
         $fromform->autocommit = "0";
@@ -1064,6 +1068,7 @@ class mod_scorm_external extends external_api {
         $fromform->completionstatusallscos = 1;
         $fromform->completionexpected = 0;
 
+        // todo where to store weight?
         $fromform = add_moduleinfo($fromform, $course, $mform);
 
         $result =[
@@ -1082,5 +1087,59 @@ class mod_scorm_external extends external_api {
         ];
 
         return new external_single_structure($structure);
+    }
+
+    /**
+     * @return external_function_parameters
+     */
+    public static function update_course_grading_parameters() {
+        return new external_function_parameters([
+            'course' => new external_value(PARAM_INT, 'course id'),
+        ]);
+    }
+
+    /**
+     * @param $course
+     * @return bool
+     * @throws dml_exception
+     */
+    public static function update_course_grading($course) {
+        global $DB;
+
+        $scorms = $DB->get_records('scorm', ['course' => $course]);
+
+        $quizzes = 0;
+        foreach($scorms as $scorm) {
+            if ($scorm->grademethod > 0) {
+                $quizzes++;
+            }
+        }
+
+        $quiz_weight = 0;
+        if ($quizzes > 0) {
+            $quiz_weight = round((100 / $quizzes) / 100, 2);
+        }
+
+        foreach($scorms as $scorm) {
+
+            if ($scorm->grademethod > 0) { // 1 is the minimum maximum, reserved for topics
+                $weight = $quiz_weight;
+            } else {
+                $weight = 0.00;
+            }
+
+            $sql = "UPDATE grade_items SET aggregationcoef = 0.00, aggregationcoef2 = ? WHERE iteminstance = ? AND courseid = ? AND itemmodule = 'scorm'";
+            $DB->execute($sql, [$weight, $scorm->id, $course]);
+        }
+
+        return true;
+    }
+
+    /**
+     * @return external_value
+     */
+    public static function update_course_grading_returns() {
+
+        return new external_value(PARAM_BOOL, 'success');
     }
 }
