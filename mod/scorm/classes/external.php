@@ -1062,7 +1062,6 @@ class mod_scorm_external extends external_api {
         $fromform->completionunlocked = 1;
         $fromform->completion = 2;
         $fromform->completionview = 1;
-        $fromform->visibleoncoursepage = 0;
         $fromform->completionscorerequired = null;
         $fromform->completionscoredisabled = 1;
         $fromform->completionstatusrequired = 4;
