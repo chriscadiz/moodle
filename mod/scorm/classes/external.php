@@ -1019,12 +1019,12 @@ class mod_scorm_external extends external_api {
 
         $data->name = $name;
         $data->section = $section;
-        $data->visible = "1";
+        $data->visible = 1;
         $data->course = $course;
-        $data->module = "19";
+        $data->module = 19;
         $data->modulename = "scorm";
-        $data->groupmode = "0";
-        $data->groupingid = "0";
+        $data->groupmode = 0;
+        $data->groupingid = 0;
         $data->id = "";
         $data->instance = "";
         $data->coursemodule = "";
@@ -1045,30 +1045,30 @@ class mod_scorm_external extends external_api {
 
         $fromform = $mform->get_data_from_api();
 
-        $fromform->displayactivityname = "1";
-        $fromform->skipview = "0";
-        $fromform->hidebrowse = "0";
-        $fromform->displaycoursestructure = "0";
-        $fromform->hidetoc = "1";
-        $fromform->nav = "1";
-        $fromform->grademethod = ($type == 3) ? "1" : "0";
-        $fromform->maxgrade = ($type == 3) ? "100" : "1";
-        $fromform->maxattempt = "0";
-        $fromform->whatgrade = ($type == 3) ? "$passmark" : "0";
-        $fromform->forcecompleted = "0";
-        $fromform->auto = "0";
-        $fromform->autocommit = "0";
-        $fromform->masteryoverride = "1";
+        $fromform->displayactivityname = 1;
+        $fromform->skipview = 0;
+        $fromform->hidebrowse = 0;
+        $fromform->displaycoursestructure = 0;
+        $fromform->hidetoc = 1;
+        $fromform->nav = 1;
+        $fromform->grademethod = ($type == 3) ? 1 : 0;
+        $fromform->maxgrade = 100;
+        $fromform->maxattempt = 0;
+        $fromform->whatgrade = 0;
+        $fromform->forcecompleted = 0;
+        $fromform->auto = 0;
+        $fromform->autocommit = 0;
+        $fromform->masteryoverride = 1;
         $fromform->completionunlocked = 1;
-        $fromform->completion = "2";
-        $fromform->completionview = "1";
+        $fromform->completion = 2;
+        $fromform->completionview = 1;
+        $fromform->visibleoncoursepage = 0;
         $fromform->completionscorerequired = null;
-        $fromform->completionscoredisabled = "1";
+        $fromform->completionscoredisabled = 1;
         $fromform->completionstatusrequired = 4;
         $fromform->completionstatusallscos = 1;
         $fromform->completionexpected = 0;
 
-        // todo where to store weight?
         $fromform = add_moduleinfo($fromform, $course, $mform);
 
         $result =[
@@ -1122,7 +1122,7 @@ class mod_scorm_external extends external_api {
 
         foreach($scorms as $scorm) {
 
-            if ($scorm->grademethod > 0) { // 1 is the minimum maximum, reserved for topics
+            if ($scorm->grademethod > 0) {
                 $weight = $quiz_weight;
             } else {
                 $weight = 0.00;
