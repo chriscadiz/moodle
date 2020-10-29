@@ -1117,7 +1117,7 @@ class mod_scorm_external extends external_api {
 
         $quiz_weight = 0;
         if ($quizzes > 0) {
-            $quiz_weight = round((100 / $quizzes) / 10000, 5);
+            $quiz_weight = round((100 / $quizzes) / 100, 5);
         }
 
         foreach($scorms as $scorm) {
