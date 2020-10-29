@@ -1128,7 +1128,7 @@ class mod_scorm_external extends external_api {
                 $weight = 0.00;
             }
 
-            $sql = "UPDATE grade_items SET aggregationcoef = 0.00, aggregationcoef2 = ? WHERE iteminstance = ? AND courseid = ? AND itemmodule = 'scorm'";
+            $sql = "UPDATE grade_items SET aggregationcoef = ?, aggregationcoef2 = 0.00 WHERE iteminstance = ? AND courseid = ? AND itemmodule = 'scorm'";
             $DB->execute($sql, [$weight, $scorm->id, $course]);
         }
 
