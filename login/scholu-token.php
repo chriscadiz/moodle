@@ -17,6 +17,16 @@ if ($_GET['logout']) {
     exit;
 }
 
+/**
+ * use as a pass-through on all links from the generator
+ */
+$redirect_url = (isset($_GET['redirect_url'])) ? $_GET['redirect_url'] : "/my";
+$redirect_url = new moodle_url($CFG->wwwroot . $redirect_url);
+if (isloggedin() and !isguestuser()) {
+    redirect($redirect_url);
+    exit;
+}
+
 $testsession = optional_param('testsession', 0, PARAM_INT); // test session works properly
 $anchor      = optional_param('anchor', '', PARAM_RAW);     // Used to restore hash anchor to wantsurl.
 
@@ -259,9 +269,7 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
         // Discard any errors before the last redirect.
         unset($SESSION->loginerrormsg);
 
-        echo sesskey();
-        exit;
-
+        redirect($redirect_url);
     } else {
         if (empty($errormsg)) {
             if ($errorcode == AUTH_LOGIN_UNAUTHORISED) {
