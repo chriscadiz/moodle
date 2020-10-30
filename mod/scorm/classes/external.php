@@ -1084,6 +1084,7 @@ class mod_scorm_external extends external_api {
         $fromform->hidetoc = 1;
         $fromform->nav = 1;
         $fromform->grademethod = ($type == 3) ? 1 : 0;
+        $fromform->forcenewattempt = 1;
         $fromform->maxgrade = 100;
         $fromform->maxattempt = 0;
         $fromform->whatgrade = 0;
