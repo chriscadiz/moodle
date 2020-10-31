@@ -4555,6 +4555,7 @@ class core_course_external extends external_api {
      * @throws dml_exception
      * @throws invalid_parameter_exception
      * @throws required_capability_exception
+     * @throws coding_exception
      */
     public static function reorder_outline($courseid, $outline) {
         global $DB;
@@ -4610,6 +4611,7 @@ class core_course_external extends external_api {
             $x++;
         }
 
+        rebuild_course_cache($courseid, true);
         return true;
     }
 
