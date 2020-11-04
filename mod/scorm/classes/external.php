@@ -1163,8 +1163,10 @@ class mod_scorm_external extends external_api {
                 $found = false;
                 foreach($outline as $section) {
                     foreach($section['quizzes'] as $id => $count) {
-                        if ($id == $scorm->module_id) {
+                        if ($id == $scorm->module_id && $count > 0) {
                             $weight = $count;
+                            $sql = "UPDATE grade_items SET aggregationcoef = ?, aggregationcoef2 = 0.00 WHERE iteminstance = ? AND courseid = ? AND itemmodule = 'scorm'";
+                            $DB->execute($sql, [$weight, $scorm->id, $course]);
                             $found = true;
                         }
                         if ($found) break;
@@ -1172,11 +1174,9 @@ class mod_scorm_external extends external_api {
                     if ($found) break;
                 }
             } else {
-                $weight = 0.00;
+                $sql = "UPDATE grade_items SET aggregationcoef = 0.00, aggregationcoef2 = 0.00 WHERE iteminstance = ? AND courseid = ? AND itemmodule = 'scorm'";
+                $DB->execute($sql, [$scorm->id, $course]);
             }
-
-            $sql = "UPDATE grade_items SET aggregationcoef = ?, aggregationcoef2 = 0.00 WHERE iteminstance = ? AND courseid = ? AND itemmodule = 'scorm'";
-            $DB->execute($sql, [$weight, $scorm->id, $course]);
         }
 
         // now update the completion criteria
@@ -1199,7 +1199,7 @@ class mod_scorm_external extends external_api {
      * @throws dml_exception
      */
     private static function update_course_completion($course) {
-        global $DB;
+        global $DB, $USER, $CFG;
 
         $course = $DB->get_record('course', array('id'=>$course), '*', MUST_EXIST);
 
@@ -1275,13 +1275,18 @@ class mod_scorm_external extends external_api {
         $aggregation->setMethod($data->role_aggregation);
         $aggregation->save();
 
+        // Create and queue an adhoc task for the course grade reset.
+//        require_once("$CFG->dirroot/course/classes/task/course_grade_reset.php");
+        $graderesettask = new \core\task\course_grade_reset();
+        $data = ['courseid' => $course->id];
+        $graderesettask->set_custom_data($data);
+        $graderesettask->set_userid($USER->id);
+        \core\task\manager::queue_adhoc_task($graderesettask);
+
+//        grade_course_reset($course->id);
+
         // Trigger an event for course module completion changed.
-        $event = \core\event\course_completion_updated::create(
-            array(
-                'courseid' => $course->id,
-                'context' => context_course::instance($course->id)
-            )
-        );
+        $event = \core\event\course_completion_updated::create(['courseid' => $course->id, 'context' => context_course::instance($course->id)]);
         $event->trigger();
 
     }
