@@ -7,7 +7,7 @@ cp -rp moodledata/ ./backup
 
 ignoreDbs=('information_schema' 'alpha_reporting' 'delta_reporting' 'gamma_reporting' 'beta_reporting' 'innodb' 'mysql' 'performance_schema' 'reporting' 'sncl' 'sys' 'tmp' )
 
-mysql -u $DB_USER --password=$DB_PASS -N -e "SHOW DATABASES;" | while IFS= read -r database
+mysql -u $DB_USER -h $DB_HOST --password=$DB_PASS -N -e "SHOW DATABASES;" | while IFS= read -r database
 do
     backup=true;
 	for i in "${ignoreDbs[@]}"; do
@@ -16,7 +16,7 @@ do
 	  fi
 	done
 	if $backup; then
-		mysqldump -u $DB_USER -h $DB_HOST --password=$DB_PASS $database --skip-comments --single-transaction --quick --skip-lock-tables --skip-triggers --compact > ./backup/$database.sql
+		mysqldump -u $DB_USER -h $DB_HOST --password=$DB_PASS $database --skip-comments --single-transaction --quick --skip-lock-tables --skip-triggers --compact --set-gtid-purged=OFF > ./backup/$database.sql
 	fi
 done
 
