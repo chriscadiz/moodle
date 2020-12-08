@@ -4,14 +4,13 @@ rm -rf backup
 mkdir backup
 cp -rp moodledata/ ./backup
 
-
 ignoreDbs=('information_schema' 'alpha_reporting' 'delta_reporting' 'gamma_reporting' 'beta_reporting' 'innodb' 'mysql' 'performance_schema' 'reporting' 'sncl' 'sys' 'tmp' )
 
 mysql -u $DB_USER -h $DB_HOST --password=$DB_PASS -N -e "SHOW DATABASES;" | while IFS= read -r database
 do
     backup=true;
 	for i in "${ignoreDbs[@]}"; do
-	  if [[ "$loop" = "$i" ]]; then
+	  if [[ "$database" = "$i" ]]; then
 		backup=false;
 	  fi
 	done
